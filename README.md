@@ -1,5 +1,8 @@
 # setup-himorime
 
+[![Test](https://github.com/nao1215/setup-himorime/actions/workflows/test.yml/badge.svg)](https://github.com/nao1215/setup-himorime/actions/workflows/test.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/nao1215/setup-himorime/badge)](https://scorecard.dev/viewer/?uri=github.com/nao1215/setup-himorime)
+
 GitHub Action to install [himorime](https://github.com/nao1215/himorime), which measures CLI performance, checks budgets and detects regressions between Git revisions.
 
 Downloads a release with checksum verification enabled by default for Linux, macOS and Windows (amd64 / arm64). On same-repository pull requests, a post step automatically publishes a short problem-only comment from the saved JSON report.
