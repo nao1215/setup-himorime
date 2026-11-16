@@ -1,6 +1,7 @@
 # setup-himorime
 
 [![Test](https://github.com/nao1215/setup-himorime/actions/workflows/test.yml/badge.svg)](https://github.com/nao1215/setup-himorime/actions/workflows/test.yml)
+[![Trivy](https://github.com/nao1215/setup-himorime/actions/workflows/trivy.yml/badge.svg)](https://github.com/nao1215/setup-himorime/actions/workflows/trivy.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/nao1215/setup-himorime/badge)](https://scorecard.dev/viewer/?uri=github.com/nao1215/setup-himorime)
 
 GitHub Action to install [himorime](https://github.com/nao1215/himorime), which measures CLI performance, checks budgets and detects regressions between Git revisions.
