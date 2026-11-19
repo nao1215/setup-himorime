@@ -1,7 +1,10 @@
 # setup-himorime
 
 [![Test](https://github.com/nao1215/setup-himorime/actions/workflows/test.yml/badge.svg)](https://github.com/nao1215/setup-himorime/actions/workflows/test.yml)
+[![Gitleaks](https://github.com/nao1215/setup-himorime/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/nao1215/setup-himorime/actions/workflows/gitleaks.yml)
 [![Trivy](https://github.com/nao1215/setup-himorime/actions/workflows/trivy.yml/badge.svg)](https://github.com/nao1215/setup-himorime/actions/workflows/trivy.yml)
+[![GitHub Marketplace](https://img.shields.io/badge/GitHub%20Marketplace-setup--himorime-blue?logo=github)](https://github.com/marketplace/actions/setup-himorime)
+[![License](https://img.shields.io/github/license/nao1215/setup-himorime)](./LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/nao1215/setup-himorime/badge)](https://scorecard.dev/viewer/?uri=github.com/nao1215/setup-himorime)
 
 GitHub Action to install [himorime](https://github.com/nao1215/himorime), which measures CLI performance, checks budgets and detects regressions between Git revisions.
@@ -83,7 +86,7 @@ bash scripts/install_test.sh   # checksum, extraction and install against a fake
 node --test scripts/comment.test.mjs
 ```
 
-The `install` job of `.github/workflows/test.yml` installs a real release on every platform. It needs a published himorime release that the workflow token can download, so it runs when the repository variable `HIMORIME_RELEASED` is `true`, or when the workflow is started by hand.
+The `install` job of `.github/workflows/test.yml` installs a real release on every platform on every pull request and push to main.
 
 ## License
 
