@@ -238,3 +238,57 @@ test('post logs all results as tables without changing the report', () => {
   for (const text of ['pass', '1.00ms', '1.10ms', 'below tolerance', 'v0.2.0', '18446744073709551615', 'linux', 'amd64', 'Example CPU', 'base', 'head', '0.95', 'p95', 'monotonic clock', run().runURL]) assert.ok(body.includes(text), text);
   assert.equal(JSON.stringify(rep), before);
 });
+
+// Property: whatever text a benchmark is named, the cell GitHub renders from
+// the comment reads as that text (whitespace collapsed), and the raw cell has
+// no character that could end the cell, start a mention or open a tag.
+// The seed is printed on failure; set HIMORIME_PROPERTY_SEED to replay it and
+// HIMORIME_PROPERTY_RUNS to run longer.
+const seedFrom = value => (value === undefined ? Math.floor(Math.random() * 2 ** 32) : Number(value)) >>> 0;
+function prng(seed) {
+  let state = seed;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 2 ** 32;
+  };
+}
+const fragments = ['@', '|', '<', '>', '&', '\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '#', '!', '~', '"', "'", ' ', '\t', '\n', 'a', 'Z', '7', 'é', '漢', '😀', '&#64;', '&amp;', '&lt;', '\\|', '@team', '<b>'];
+// GitHub decodes a backslash before ASCII punctuation to the punctuation and an
+// entity reference to its character; everything else is literal text.
+function rendered(markdown) {
+  let out = '';
+  for (let i = 0; i < markdown.length;) {
+    const entity = /^&(#[0-9]+|#x[0-9a-f]+|amp|lt|gt|quot);/i.exec(markdown.slice(i));
+    if (markdown[i] === '\\' && /[!-\/:-@\[-`{-~]/.test(markdown[i + 1] ?? '')) { out += markdown[i + 1]; i += 2; }
+    else if (entity) {
+      const name = entity[1].toLowerCase();
+      out += name.startsWith('#x') ? String.fromCodePoint(parseInt(name.slice(2), 16)) : name.startsWith('#') ? String.fromCodePoint(Number(name.slice(1))) : { amp: '&', lt: '<', gt: '>', quot: '"' }[name];
+      i += entity[0].length;
+    } else { out += markdown[i]; i += 1; }
+  }
+  return out;
+}
+
+test('property: a benchmark name renders as itself and cannot break the table', () => {
+  const seed = seedFrom(process.env.HIMORIME_PROPERTY_SEED);
+  const runs = Number(process.env.HIMORIME_PROPERTY_RUNS ?? 500);
+  const random = prng(seed);
+  for (let i = 0; i < runs; i++) {
+    const length = 1 + Math.floor(random() * 12);
+    const name = 'n' + Array.from({ length }, () => fragments[Math.floor(random() * fragments.length)]).join('');
+    const rep = report();
+    rep.summary = { ...rep.summary, pass: 0, error: 1, exit_code: 1 };
+    rep.suites[0].benchmarks[0].name = name;
+    Object.assign(rep.suites[0].benchmarks[0].commands[0], { name: 'zz', result: 'error', comparisons: undefined });
+    const row = render(rep, run()).split('\n').find(line => line.endsWith(' / zz | — | error |'));
+    const context = `seed=${seed} run=${i} name=${JSON.stringify(name)} row=${JSON.stringify(row)}`;
+    assert.ok(row, context);
+    const raw = row.slice(2, -' / zz | — | error |'.length);
+    for (const unsafe of ['|', '@', '<', '>', '\n']) assert.ok(!raw.includes(unsafe), `${unsafe} in cell: ${context}`);
+    const want = name.replace(/[\s\p{Cc}\p{Cf}]+/gu, ' ').trim();
+    assert.equal(rendered(raw), want, context);
+  }
+});
