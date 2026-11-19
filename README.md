@@ -49,6 +49,8 @@ Only a fresh `$RUNNER_TEMP/himorime.json` is read. Missing or stale reports are 
 
 The `version` input selects the himorime CLI release, independently of the action revision. Pin it instead of `latest` so a new himorime release cannot change what your workflow installs.
 
+The version must be `latest`, `vX.Y.Z` or `X.Y.Z` (a pre-release suffix such as `-rc.1` is allowed). Anything else, such as `V0.1.0` or `0.1`, fails the step before any download.
+
 ## Inputs
 
 | Name                 | Default               | Description                                                        |
