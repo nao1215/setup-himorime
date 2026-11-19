@@ -77,6 +77,15 @@ The action fails when an enabled verification cannot be completed:
 
 The action derives release asset names (`himorime_<version>_<os>_<arch>.<ext>`) from himorime's [goreleaser](https://goreleaser.com/) config. If himorime's release naming changes, this action must be updated to match.
 
+## Testing
+
+| Technique | Bug class caught here |
+|---|---|
+| [Version input boundaries](scripts/version_test.sh) | `latest`, empty, whitespace, `v`-less and pre-release inputs resolving to the wrong tag |
+| [Offline install steps](scripts/install_test.sh) | Checksum, extraction and install mistakes against a fake archive, without a network |
+| [Comment rendering and publishing](scripts/comment.test.mjs) | Wrong, duplicated or leaked PR comment content and stale reports being published |
+| [Real-runner installs](.github/workflows/test.yml) | Asset naming, extraction, checksum and `PATH` breakage on Linux, macOS and Windows (amd64 / arm64), pinned versions installing something else, and a missing release passing silently |
+
 ## Development
 
 ```shell
