@@ -11,11 +11,15 @@ workflows:
     '.github/workflows/gitleaks.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e'
+    '.github/workflows/prepare-release.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
     '.github/workflows/scorecard.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
         - 'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066'
         - 'ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e'
+    '.github/workflows/sync-release-tags.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
     '.github/workflows/test.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7'

@@ -23,13 +23,16 @@ jobs:
 
       - name: Run ShellCheck
         # -x lets ShellCheck follow the sourced install.sh from the tests.
-        run: shellcheck -x scripts/install.sh scripts/version_test.sh scripts/install_test.sh
+        run: shellcheck -x scripts/install.sh scripts/version_test.sh scripts/install_test.sh scripts/release_meta.sh scripts/release_meta_test.sh
 
       - name: Run actionlint
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
 
       - name: Test version normalization
         run: bash scripts/version_test.sh
+
+      - name: Test release tag normalization
+        run: bash scripts/release_meta_test.sh
 
   # Checksum verification, extraction and installation against a fake release
   # archive, on every supported platform. Needs no published release.
@@ -108,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        version: [v0.6.0, 0.6.0]
+        version: [v0.6.1, 0.6.1]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -131,13 +134,13 @@ jobs:
           OUT_INSTALL_DIR: ${{ steps.setup.outputs.install-dir }}
           WANT_DIR: ${{ runner.temp }}/himorime-pinned
         run: |
-          test "${OUT_VERSION}" = "v0.6.0" || { echo "version output: ${OUT_VERSION}" >&2; exit 1; }
+          test "${OUT_VERSION}" = "v0.6.1" || { echo "version output: ${OUT_VERSION}" >&2; exit 1; }
           test "${OUT_INSTALL_DIR}" = "${WANT_DIR}" || { echo "install-dir output: ${OUT_INSTALL_DIR}" >&2; exit 1; }
           test -x "${OUT_BIN_PATH}" || { echo "bin-path is not executable: ${OUT_BIN_PATH}" >&2; exit 1; }
           got="$(himorime version)"
           echo "${got}"
           case "${got}" in
-            "himorime v0.6.0 "*) ;;
+            "himorime v0.6.1 "*) ;;
             *) echo "unexpected version output" >&2; exit 1 ;;
           esac
 

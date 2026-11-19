@@ -27,11 +27,11 @@ jobs:
           # The base commit must exist locally for himorime's temporary worktree.
           fetch-depth: 0
           persist-credentials: false
-      - uses: nao1215/setup-himorime@main # Pin a reviewed commit in production.
+      - uses: nao1215/setup-himorime@v0 # Pin a reviewed commit in production.
       - run: himorime ci --format json --output "$RUNNER_TEMP/himorime.json"
 ```
 
-`himorime` is on `PATH`. The measurement step keeps its exit status, logs and Job Summary; the action posts the notification at the end of the job, including when measurement fails after writing a report. No comment command, helper executable or second workflow is needed. Automatic comments are available on `main`; existing release tags are unchanged.
+`himorime` is on `PATH`. The measurement step keeps its exit status, logs and Job Summary; the action posts the notification at the end of the job, including when measurement fails after writing a report. No comment command, helper executable or second workflow is needed. Automatic comments are available from v0.2.0.
 
 Comments contain errors, regressions, budget violations and inconclusive or skipped checks, with a link to the Actions run. Passing and improved measurements are not listed. Repeated runs leave one bot-owned report comment; existing human comments are untouched. Fork PRs and non-PR events never post, even with a write-capable token.
 
@@ -42,9 +42,9 @@ Only a fresh `$RUNNER_TEMP/himorime.json` is read. Missing or stale reports are 
 ## Pin a version
 
 ```yaml
-- uses: nao1215/setup-himorime@main # Pin a reviewed action commit in production.
+- uses: nao1215/setup-himorime@v0 # Pin a reviewed action commit in production.
   with:
-    version: v0.1.0 # default: latest
+    version: v0.6.1 # default: latest
 ```
 
 The `version` input selects the himorime CLI release, independently of the action revision. Pin it instead of `latest` so a new himorime release cannot change what your workflow installs.
@@ -53,7 +53,7 @@ The `version` input selects the himorime CLI release, independently of the actio
 
 | Name                 | Default               | Description                                                        |
 | -------------------- | --------------------- | ------------------------------------------------------------------ |
-| `version`            | `latest`              | Release to install: `latest`, `v0.1.0`, or `0.1.0`.                |
+| `version`            | `latest`              | Release to install: `latest`, `v0.6.1`, or `0.6.1`.                |
 | `github-token`       | `${{ github.token }}` | Token for downloads and PR comments; comments need `pull-requests: write`. |
 | `install-dir`        | `$HOME/.himorime/bin` | Where to install the binary. Added to `PATH`.                      |
 | `verify-checksum`    | `true`                | Verify the archive against `checksums.txt` (SHA-256).              |
@@ -64,7 +64,7 @@ The `version` input selects the himorime CLI release, independently of the actio
 
 | Name          | Description                                  |
 | ------------- | -------------------------------------------- |
-| `version`     | Installed version (e.g. `v0.1.0`).           |
+| `version`     | Installed version (e.g. `v0.6.1`).           |
 | `bin-path`    | Absolute path to the `himorime` binary.      |
 | `install-dir` | Directory the binary was installed into.     |
 
@@ -82,6 +82,7 @@ The action derives release asset names (`himorime_<version>_<os>_<arch>.<ext>`) 
 | Technique | Bug class caught here |
 |---|---|
 | [Version input boundaries](scripts/version_test.sh) | `latest`, empty, whitespace, `v`-less and pre-release inputs resolving to the wrong tag |
+| [Release tag normalization](scripts/release_meta_test.sh) | Floating `vX` / `vX.Y` tags computed from a malformed release tag |
 | [Offline install steps](scripts/install_test.sh) | Checksum, extraction and install mistakes against a fake archive, without a network |
 | [Comment rendering and publishing](scripts/comment.test.mjs) | Wrong, duplicated or leaked PR comment content and stale reports being published |
 | [Real-runner installs](.github/workflows/test.yml) | Asset naming, extraction, checksum and `PATH` breakage on Linux, macOS and Windows (amd64 / arm64), pinned versions installing something else, and a missing release passing silently |
@@ -89,13 +90,20 @@ The action derives release asset names (`himorime_<version>_<os>_<arch>.<ext>`) 
 ## Development
 
 ```shell
-shellcheck -x scripts/install.sh scripts/version_test.sh scripts/install_test.sh
-bash scripts/version_test.sh   # version normalization
-bash scripts/install_test.sh   # checksum, extraction and install against a fake archive
+shellcheck -x scripts/install.sh scripts/version_test.sh scripts/install_test.sh scripts/release_meta.sh scripts/release_meta_test.sh
+bash scripts/version_test.sh      # version normalization
+bash scripts/install_test.sh      # checksum, extraction and install against a fake archive
+bash scripts/release_meta_test.sh # release tag normalization
 node --test scripts/comment.test.mjs
 ```
 
 The `install` job of `.github/workflows/test.yml` installs a real release on every platform on every pull request and push to main.
+
+## Maintainer release flow
+
+1. Run the `PrepareRelease` workflow from the Actions tab with `vX.Y.Z` (or `X.Y.Z`).
+1. Open the draft GitHub release it creates, tick `Publish this Action to the GitHub Marketplace`, then publish it.
+1. After publish, `SyncReleaseTags` moves the floating `vX` and `vX.Y` tags (for example `v0` and `v0.2`) to that release.
 
 ## License
 
