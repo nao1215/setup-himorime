@@ -104,8 +104,8 @@ test('posts once then removes only older owned comments across pages', async () 
   assert.equal(calls[0][0], 'POST');
 });
 
-test('an older run cannot replace a newer result, and same-run races converge', async () => {
-  for (const winner of [owned(9, 124, 1), owned(9, 123, 3), owned(9, 123, 2)]) {
+test('an older run cannot replace a newer result', async () => {
+  for (const winner of [owned(9, 124, 1), owned(9, 123, 3)]) {
     const deleted = [];
     const send = async (method, path) => {
       if (method === 'POST') return { id: 3 };
@@ -115,6 +115,19 @@ test('an older run cannot replace a newer result, and same-run races converge', 
     assert.equal(await publish(run(), render(report(), run()), send), 9);
     assert.deepEqual(deleted, ['/repos/octo/bench/issues/comments/3']);
   }
+});
+
+test('matrix shards of one run attempt keep each other\'s comments', async () => {
+  // Shards share the run ID and attempt. A passing shard that deleted its
+  // siblings would hide a regression another shard reported.
+  const deleted = [];
+  const send = async (method, path) => {
+    if (method === 'POST') return { id: 3 };
+    if (method === 'GET') return [owned(5, 122, 1), owned(9, 123, 2), owned(3, 123, 2)];
+    deleted.push(path);
+  };
+  assert.equal(await publish(run(), render(report(), run()), send), 3);
+  assert.deepEqual(deleted, ['/repos/octo/bench/issues/comments/5']);
 });
 
 test('API failures are surfaced and never trigger deletion without a complete list', async () => {
@@ -165,6 +178,13 @@ test('post uses the context captured before benchmark commands ran', async t => 
   assert.match(log, /\| pass \|/);
   assert.equal(calls[0].path, '/repos/octo/bench/issues/8/comments');
   assert.match(calls[0].data.body, /No regressions/);
+  // A token without pull-requests: write must not fail a passing benchmark job.
+  log = '';
+  const readOnly = () => async () => { throw new Error('GitHub API returned 403; grant pull-requests: write to the benchmark job'); };
+  await post({ ...settings, STATE_publication: state }, readOnly, output);
+  assert.match(log, /::warning::setup-himorime: could not post the PR comment/);
+  const broken = () => async () => { throw new Error('GitHub API returned 500'); };
+  await assert.rejects(post({ ...settings, STATE_publication: state }, broken, output), /500/);
   const fork = structuredClone(event);
   fork.pull_request.head.repo.id = 99;
   await writeFile(settings.GITHUB_EVENT_PATH, JSON.stringify(fork));

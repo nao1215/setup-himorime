@@ -33,7 +33,7 @@ jobs:
 
 `himorime` is on `PATH`. The measurement step keeps its exit status, logs and Job Summary; the action posts the notification at the end of the job, including when measurement fails after writing a report. No comment command, helper executable or second workflow is needed. Automatic comments are available from v0.2.0.
 
-Comments contain errors, regressions, budget violations and inconclusive or skipped checks, with a link to the Actions run. Passing and improved measurements are not listed. Repeated runs leave one bot-owned report comment; existing human comments are untouched. Fork PRs and non-PR events never post, even with a write-capable token.
+Comments contain errors, regressions, budget violations and inconclusive or skipped checks, with a link to the Actions run. Passing and improved measurements are not listed. Each job leaves one bot-owned report comment, and a new run or attempt replaces the comments of earlier ones; matrix jobs of the same run keep their own comments so that one shard cannot hide another's regression. Existing human comments are untouched. Without `pull-requests: write` the comment is skipped with a warning and the job result is left to the measurement step. Fork PRs and non-PR events never post, even with a write-capable token.
 
 Before posting, the post step logs all saved results, decision settings and run metadata as tables, including with older CLI releases that do not log a full report themselves. Raw samples remain in the JSON file; measurements and verdicts are not recomputed.
 
