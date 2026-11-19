@@ -23,13 +23,16 @@ jobs:
 
       - name: Run ShellCheck
         # -x lets ShellCheck follow the sourced install.sh from the tests.
-        run: shellcheck -x scripts/install.sh scripts/version_test.sh scripts/install_test.sh
+        run: shellcheck -x scripts/install.sh scripts/version_test.sh scripts/install_test.sh scripts/release_meta.sh scripts/release_meta_test.sh
 
       - name: Run actionlint
         uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
 
       - name: Test version normalization
         run: bash scripts/version_test.sh
+
+      - name: Test release tag normalization
+        run: bash scripts/release_meta_test.sh
 
   # Checksum verification, extraction and installation against a fake release
   # archive, on every supported platform. Needs no published release.
