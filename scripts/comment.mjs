@@ -57,8 +57,11 @@ export async function readReport(path, started) {
 function cell(value, limit = 120) {
   let text = String(value ?? '').replace(/[\s\p{Cc}\p{Cf}]+/gu, ' ').trim();
   if ([...text].length > limit) text = [...text].slice(0, limit).join('') + '…';
-  return (text || '—').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-    .replaceAll('@', '&#64;').replaceAll('|', '&#124;').replace(/[\\`*_{}\[\]()#!~]/g, '\\$&');
+  // Markdown punctuation is escaped before the entities are written: escaping
+  // afterwards turned the # of &#64; and &#124; into \#, so GitHub showed the
+  // literal text "&#64;" instead of the @ in a name.
+  return (text || '—').replace(/[\\`*_{}\[\]()#!~]/g, '\\$&').replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;').replaceAll('@', '&#64;').replaceAll('|', '&#124;');
 }
 
 const names = { latency: 'Latency', cpu_total: 'CPU time', cpu_user: 'CPU user time', cpu_system: 'CPU system time', cpu_utilization: 'CPU utilization', peak_rss: 'Peak RSS', throughput: 'Throughput' };
