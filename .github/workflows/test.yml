@@ -111,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        version: [v0.6.0, 0.6.0]
+        version: [v0.6.1, 0.6.1]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -134,13 +134,13 @@ jobs:
           OUT_INSTALL_DIR: ${{ steps.setup.outputs.install-dir }}
           WANT_DIR: ${{ runner.temp }}/himorime-pinned
         run: |
-          test "${OUT_VERSION}" = "v0.6.0" || { echo "version output: ${OUT_VERSION}" >&2; exit 1; }
+          test "${OUT_VERSION}" = "v0.6.1" || { echo "version output: ${OUT_VERSION}" >&2; exit 1; }
           test "${OUT_INSTALL_DIR}" = "${WANT_DIR}" || { echo "install-dir output: ${OUT_INSTALL_DIR}" >&2; exit 1; }
           test -x "${OUT_BIN_PATH}" || { echo "bin-path is not executable: ${OUT_BIN_PATH}" >&2; exit 1; }
           got="$(himorime version)"
           echo "${got}"
           case "${got}" in
-            "himorime v0.6.0 "*) ;;
+            "himorime v0.6.1 "*) ;;
             *) echo "unexpected version output" >&2; exit 1 ;;
           esac
 

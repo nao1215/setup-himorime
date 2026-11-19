@@ -44,7 +44,7 @@ Only a fresh `$RUNNER_TEMP/himorime.json` is read. Missing or stale reports are 
 ```yaml
 - uses: nao1215/setup-himorime@v0 # Pin a reviewed action commit in production.
   with:
-    version: v0.1.0 # default: latest
+    version: v0.6.1 # default: latest
 ```
 
 The `version` input selects the himorime CLI release, independently of the action revision. Pin it instead of `latest` so a new himorime release cannot change what your workflow installs.
@@ -53,7 +53,7 @@ The `version` input selects the himorime CLI release, independently of the actio
 
 | Name                 | Default               | Description                                                        |
 | -------------------- | --------------------- | ------------------------------------------------------------------ |
-| `version`            | `latest`              | Release to install: `latest`, `v0.1.0`, or `0.1.0`.                |
+| `version`            | `latest`              | Release to install: `latest`, `v0.6.1`, or `0.6.1`.                |
 | `github-token`       | `${{ github.token }}` | Token for downloads and PR comments; comments need `pull-requests: write`. |
 | `install-dir`        | `$HOME/.himorime/bin` | Where to install the binary. Added to `PATH`.                      |
 | `verify-checksum`    | `true`                | Verify the archive against `checksums.txt` (SHA-256).              |
@@ -64,7 +64,7 @@ The `version` input selects the himorime CLI release, independently of the actio
 
 | Name          | Description                                  |
 | ------------- | -------------------------------------------- |
-| `version`     | Installed version (e.g. `v0.1.0`).           |
+| `version`     | Installed version (e.g. `v0.6.1`).           |
 | `bin-path`    | Absolute path to the `himorime` binary.      |
 | `install-dir` | Directory the binary was installed into.     |
 
