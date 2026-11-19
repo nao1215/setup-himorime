@@ -261,8 +261,15 @@ export async function publish(run, body, send) {
   }
   if (!all.some(c => c.id === created.id)) all.push({ id: created.id, runID: run.runID, attempt: run.attempt });
   all.sort((a, b) => b.runID - a.runID || b.attempt - a.attempt || b.id - a.id);
-  for (const old of all.slice(1)) await send('DELETE', `/repos/${run.repository}/issues/comments/${old.id}`);
-  return all[0].id;
+  // Every job of the newest run attempt keeps its comment: matrix shards share
+  // a run ID and attempt, and deleting a sibling would let a passing shard hide
+  // another shard's regression. Only comments from older runs or attempts go.
+  const newest = all[0];
+  for (const old of all) {
+    if (old.runID === newest.runID && old.attempt === newest.attempt) continue;
+    await send('DELETE', `/repos/${run.repository}/issues/comments/${old.id}`);
+  }
+  return all.some(c => c.id === created.id && c.runID === newest.runID && c.attempt === newest.attempt) ? created.id : newest.id;
 }
 
 export function client(apiURL, token, request = fetch) {

@@ -35,7 +35,14 @@ export async function post(env = process.env, makeClient = client, output = proc
   try { output.write(renderReport(report, state.run)); }
   finally { output.write(`\n::${token}::\n`); }
   const send = makeClient(state.run.apiURL, env['INPUT_GITHUB-TOKEN']);
-  await publish(state.run, body, send);
+  try {
+    await publish(state.run, body, send);
+  } catch (error) {
+    // The benchmark verdict belongs to the measurement step. A token that
+    // cannot comment must not turn a passing benchmark job red.
+    if (!/^GitHub API returned 403\b/.test(String(error?.message))) throw error;
+    output.write('::warning::setup-himorime: could not post the PR comment (GitHub API returned 403); grant pull-requests: write to the benchmark job\n');
+  }
 }
 
 export async function run(operation) {
