@@ -82,6 +82,7 @@ The action derives release asset names (`himorime_<version>_<os>_<arch>.<ext>`) 
 | Technique | Bug class caught here |
 |---|---|
 | [Version input boundaries](scripts/version_test.sh) | `latest`, empty, whitespace, `v`-less and pre-release inputs resolving to the wrong tag |
+| [Release tag normalization](scripts/release_meta_test.sh) | Floating `vX` / `vX.Y` tags computed from a malformed release tag |
 | [Offline install steps](scripts/install_test.sh) | Checksum, extraction and install mistakes against a fake archive, without a network |
 | [Comment rendering and publishing](scripts/comment.test.mjs) | Wrong, duplicated or leaked PR comment content and stale reports being published |
 | [Real-runner installs](.github/workflows/test.yml) | Asset naming, extraction, checksum and `PATH` breakage on Linux, macOS and Windows (amd64 / arm64), pinned versions installing something else, and a missing release passing silently |
