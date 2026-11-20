@@ -9,7 +9,7 @@
 
 GitHub Action to install [himorime](https://github.com/nao1215/himorime), which measures CLI performance, checks budgets and detects regressions between Git revisions.
 
-Downloads a release with checksum verification enabled by default for Linux, macOS and Windows (amd64 / arm64). On same-repository pull requests, a post step automatically publishes a short problem-only comment from the saved JSON report.
+It downloads a checksum-verified release for Linux, macOS or Windows (amd64 / arm64). On same-repository pull requests it comments only the problems found in the saved JSON report.
 
 ## Quick start
 
@@ -31,13 +31,19 @@ jobs:
       - run: himorime ci --format json --output "$RUNNER_TEMP/himorime.json"
 ```
 
-`himorime` is on `PATH`. The measurement step keeps its exit status, logs and Job Summary; the action posts the notification at the end of the job, including when measurement fails after writing a report. No comment command, helper executable or second workflow is needed. Automatic comments are available from v0.2.0.
+`himorime` is on `PATH`. The measurement step keeps its own exit status, logs and Job Summary.
 
-Comments contain errors, regressions, budget violations and inconclusive or skipped checks, with a link to the Actions run. Passing and improved measurements are not listed. Each job leaves one bot-owned report comment, and a new run or attempt replaces the comments of earlier ones; matrix jobs of the same run keep their own comments so that one shard cannot hide another's regression. Existing human comments are untouched. Without `pull-requests: write` the comment is skipped with a warning and the job result is left to the measurement step. Fork PRs and non-PR events never post, even with a write-capable token.
+## PR comments
 
-Before posting, the post step logs all saved results, decision settings and run metadata as tables, including with older CLI releases that do not log a full report themselves. Raw samples remain in the JSON file; measurements and verdicts are not recomputed.
+From v0.2.0, a post step at the end of the job reads `$RUNNER_TEMP/himorime.json` and comments on the pull request, also when measurement failed after writing the report. You need no extra command or workflow.
 
-Only a fresh `$RUNNER_TEMP/himorime.json` is read. Missing or stale reports are skipped; malformed reports or API failures fail the post step with a diagnostic. Use one reporting benchmark job per PR: concurrent jobs converge on one result, not a combined report. Do not use `pull_request_target` or pass the publication token to measured commands. Same-repository PR code runs in a job with write permissions; grant those permissions only to contributors you trust.
+The comment lists errors, regressions, budget violations and inconclusive or skipped checks, with a link to the run. Passing and improved measurements are left out. Each job owns one comment, and a new run or attempt replaces it; matrix jobs in the same run keep separate comments, so one shard cannot hide another's regression. Human comments are never touched.
+
+Before posting, the step logs the saved results, decision settings and run metadata as tables, even for older CLI releases that do not log a full report. Raw samples stay in the JSON file, and nothing is recomputed.
+
+A missing or stale report is skipped. A malformed report or an API failure fails the post step with a diagnostic. Without `pull-requests: write` the comment is skipped with a warning, and the job result is left to the measurement step. Fork PRs and non-PR events never post, even with a write-capable token. Run one reporting benchmark job per PR, because concurrent jobs overwrite each other instead of combining.
+
+Do not use `pull_request_target`, and do not pass the publication token to measured commands. Same-repository PR code runs with write permissions, so grant them only to contributors you trust.
 
 ## Pin a version
 
@@ -47,9 +53,7 @@ Only a fresh `$RUNNER_TEMP/himorime.json` is read. Missing or stale reports are 
     version: v0.6.1 # default: latest
 ```
 
-The `version` input selects the himorime CLI release, independently of the action revision. Pin it instead of `latest` so a new himorime release cannot change what your workflow installs.
-
-The version must be `latest`, `vX.Y.Z` or `X.Y.Z` (a pre-release suffix such as `-rc.1` is allowed). Anything else, such as `V0.1.0` or `0.1`, fails the step before any download.
+`version` selects the himorime CLI release, independently of the action revision. Pin it so a new himorime release cannot change what your workflow installs. The version must be `latest`, `vX.Y.Z` or `X.Y.Z` (a pre-release suffix such as `-rc.1` is allowed). Anything else, such as `V0.1.0` or `0.1`, fails the step before any download.
 
 ## Inputs
 
@@ -75,7 +79,7 @@ The version must be `latest`, `vX.Y.Z` or `X.Y.Z` (a pre-release suffix such as 
 The action fails when an enabled verification cannot be completed:
 
 - `verify-checksum: true` (default): the install fails if `checksums.txt` cannot be downloaded, if the archive is missing from it, or if the SHA-256 does not match. Set `verify-checksum: false` to skip the check entirely.
-- `verify-attestation: true`: the install fails if the `gh` CLI is unavailable, if neither `GH_TOKEN` nor `GITHUB_TOKEN` is set, or if `gh attestation verify` fails. It is opt-in and skipped by default.
+- `verify-attestation: true`: the install fails if the `gh` CLI is unavailable, if neither `GH_TOKEN` nor `GITHUB_TOKEN` is set, or if `gh attestation verify` fails.
 
 The action derives release asset names (`himorime_<version>_<os>_<arch>.<ext>`) from himorime's [goreleaser](https://goreleaser.com/) config. If himorime's release naming changes, this action must be updated to match.
 
@@ -99,7 +103,7 @@ bash scripts/release_meta_test.sh # release tag normalization
 node --test scripts/comment.test.mjs
 ```
 
-The `install` job of `.github/workflows/test.yml` installs a real release on every platform on every pull request and push to main.
+The `install` job of `.github/workflows/test.yml` installs a real release on every platform for each pull request and push to main.
 
 ## Maintainer release flow
 
